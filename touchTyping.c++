@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include <string>
 #include <string.h>
 #include <unistd.h>
 #include <curses.h>
@@ -118,8 +119,9 @@ void print_state1 (int lt_count, int wcount, int time, int typos [96])
 int main(int argc, char** argv)
 {
   ifstream smpFile(argv[1]);
-  int wcount = 0, lt_count = 0;
-  char line2 [100] = {}; 
+  int wcount = 0;
+  unsigned lt_count = 0;
+  string line2 = ""; 
   time_t start, finish;
   char input;
   int typos [100]; 
@@ -127,12 +129,6 @@ int main(int argc, char** argv)
   if(argc < 2) 
   {
     printf("A text file argument is required\n");
-    return 1;
-  }
-  
-  if(!smpFile.is_open())
-  {
-    printf("Error opening file");
     return 1;
   }
   
@@ -149,37 +145,37 @@ int main(int argc, char** argv)
   int readcount = 0;
   while (smpFile.good())
   {
-    smpFile.get(line2,60);
-      wcount++;
-      print_in_centre("CTTT - Console Touch Typing Tutor");
-      wmove(stdscr,2,0);
-      wattron(stdscr,COLOR_PAIR(1));
-      printw("%s\n",line2);   
-      wrefresh(stdscr);
-      wattron(stdscr,COLOR_PAIR(2));
-      printw("word count %d\n",strlen(line2));
-      lt_count = strlen(line2) + lt_count; 
-      for(int i = 0; i < strlen(line2) ;i++)
-      {
-        wmove(stdscr,2,0 + i);
-        input = tty_getchar();
-
-        if (line2[i] != input)
-	    {
-			while(line2[i] != input) 
-			{	  
-				typos[(int) line2[i] - 30]++;
-				wmove(stdscr,2,0 + i);
-				input = tty_getchar();
-			}
-        } 
-		//Correct Letter inputted - Replace character using COLOR_PAIR(2) 
-		waddch(stdscr,input);
-		
-        //To count the number of words, 
-        if(line2[i] == ' ') wcount++; 
-      }
-    werase(stdscr); 
+	getline(smpFile,line2);
+	wcount++;
+	print_in_centre("CTTT - Console Touch Typing Tutor");
+	wmove(stdscr,2,0);
+	wattron(stdscr,COLOR_PAIR(1));
+	printw("%s\n",line2.c_str());   
+	wrefresh(stdscr);
+	wattron(stdscr,COLOR_PAIR(2));
+	printw("word count %u\n",(unsigned) line2.size());
+	lt_count = (unsigned) line2.size() + lt_count; 
+	for(unsigned i = 0; i < line2.size() ;++i)
+	{
+	  wmove(stdscr,2,0 + i);
+	  input = tty_getchar();
+  
+	  if (line2[i] != input)
+	      {
+			  while(line2[i] != input) 
+			  {	  
+				  typos[(int) line2[i] - 30]++;
+				  wmove(stdscr,2,0 + i);
+				  input = tty_getchar();
+			  }
+	  } 
+		  //Correct Letter inputted - Replace character using COLOR_PAIR(2) 
+		  waddch(stdscr,input);
+		  
+	  //To count the number of words, 
+	  if(line2[i] == ' ') wcount++; 
+	}
+      werase(stdscr); 
   }
 
   time(&finish);
