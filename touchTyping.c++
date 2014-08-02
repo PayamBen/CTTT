@@ -29,7 +29,6 @@ int tty_getchar()
 	return getch();
 }
 
-
 /*
  * aim: to exit program 
  * */
@@ -118,6 +117,7 @@ int main(int argc, char** argv)
 {
 	ifstream smpFile(argv[1]);
 	int wcount = 0;
+	char name[] = {"CTTT - Console Touch Typing Tutor"}; 
 	unsigned lt_count = 0;
 	string line2 = ""; 
 	time_t start, finish;
@@ -147,7 +147,7 @@ int main(int argc, char** argv)
 	{
 		getline(smpFile,line2);
 		wcount++;
-		print_in_centre("CTTT - Console Touch Typing Tutor");
+		print_in_centre(name);
 		wmove(stdscr,2,0);
 		wattron(stdscr,COLOR_PAIR(1));
 		printw("%s\n",line2.c_str());   
@@ -155,28 +155,30 @@ int main(int argc, char** argv)
 		wattron(stdscr,COLOR_PAIR(2));
 		printw("word count %u\n",(unsigned) line2.size());
 		lt_count = (unsigned) line2.size() + lt_count; 
-	for(unsigned i = 0; i < line2.size() ;++i)
-	{
-		wmove(stdscr,2,0 + i);
-		input = tty_getchar();
-		if (line2[i] != input)
+		for(unsigned i = 0; i < line2.size() ;++i)
 		{
-		while(line2[i] != input) 
-		{
-			typos[(int) line2[i] - 30]++;
 			wmove(stdscr,2,0 + i);
 			input = tty_getchar();
+			if (line2[i] != input)
+			{
+				while(line2[i] != input) 
+				{
+					typos[(int) line2[i] - 30]++;
+					wmove(stdscr,2,0 + i);
+					input = tty_getchar();
+				}
+			} 
+			//Correct Letter inputted - Replace character using COLOR_PAIR(2) 
+			waddch(stdscr,input);
+			
+			//To count the number of words, 
+			if(line2[i] == ' ')
+			{
+				wcount++;
+			}
 		}
-	} 
-	//Correct Letter inputted - Replace character using COLOR_PAIR(2) 
-	waddch(stdscr,input);
-	
-	//To count the number of words, 
-	if(line2[i] == ' ') wcount++; 
-	}
 		werase(stdscr); 
-	}
-	
+	}		
 	time(&finish);
 	smpFile.close();
 	werase(stdscr);
