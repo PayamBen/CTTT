@@ -6,8 +6,17 @@
 #include <curses.h>
 #include <time.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <signal.h>
 
 using namespace std;
+
+ifstream smpFile;
+int wcount = 0;
+unsigned lt_count = 0;
+time_t start, finish;
+char input;
+int typos [100]; 
 
 /*
  * aim: prepare for using curses.h, to prevent text echoing to screen.
@@ -92,7 +101,7 @@ void print_state1 (int lt_count, int wcount, int time, int typos [96])
 	double rate = 0.0;
 	char x = 'a';
 	printw("Your Results\n\nLetters typed: %d\n",lt_count);
-	printw("Words typed:%d\n",wcount);
+	printw("Words typed: %d\n",wcount);
 	printw("Time taken: %d seconds\n", time);
 	
 	rate = (double) lt_count * 60 / time;
@@ -113,20 +122,43 @@ void print_state1 (int lt_count, int wcount, int time, int typos [96])
 	wrefresh(stdscr);   
 }
 
+/*
+ * aim: do all stuff required to exit the program
+ * purpose: to be called whenever program program exits
+ */
+void end_program() 
+{
+	time(&finish);
+	smpFile.close();
+	werase(stdscr);
+	print_state1(lt_count,wcount,finish - start,typos);
+	printw("Press any key to exit\n");
+	wrefresh(stdscr);
+	cin >> input;   
+	tty_fix();
+	print_state2(lt_count,wcount,finish - start,typos);   
+
+	exit(0);
+}
+
+/*
+ * aim: handle sigint signal for CTRL-C terminating
+ */
+void signal_handler(int signum)
+{
+	end_program();
+}
+
 int main(int argc, char** argv)
 {
-	ifstream smpFile(argv[1]);
-	int wcount = 0;
 	char name[] = {"CTTT - Console Touch Typing Tutor"}; 
-	unsigned lt_count = 0;
 	string line2 = ""; 
-	time_t start, finish;
-	char input;
-	int typos [100]; 
+
+	smpFile.open(argv[1]);
 	
 	if(argc < 2) 
 	{
-	printf("A text file argument is required\n");
+		printf("A text file argument is required\n");
 		return 1;
 	}
 	
@@ -134,13 +166,15 @@ int main(int argc, char** argv)
 	
 	for(int i = 0; i < 100;i++)
 	{
-		typos[i] =0;
+		typos[i] = 0;
 	}
 	
 	init_pair(1,COLOR_BLUE,COLOR_RED);
 	init_pair(2,COLOR_WHITE,COLOR_BLACK);
 	
 	time(&start);
+
+	signal(SIGINT, signal_handler);
 	
 	int readcount = 0;
 	while (smpFile.good())
@@ -179,14 +213,7 @@ int main(int argc, char** argv)
 		}
 		werase(stdscr); 
 	}		
-	time(&finish);
-	smpFile.close();
-	werase(stdscr);
-	print_state1(lt_count,wcount,finish - start,typos);
-	printw("Press any key to exit\n");
-	wrefresh(stdscr);
-	cin >> input;   
-	tty_fix();
-	print_state2(lt_count,wcount,finish - start,typos);   
+
+	end_program();
 	return 0;
 }
