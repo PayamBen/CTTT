@@ -9,6 +9,8 @@
 #include <stdlib.h>
 #include <signal.h>
 
+#define TYPOSIZ 144 // 144 is from 33 (!) to 176 (~)
+
 using namespace std;
 
 ifstream smpFile;
@@ -16,7 +18,7 @@ int wcount = 0;
 unsigned lt_count = 0;
 time_t start, finish;
 char input;
-int typos [100]; 
+int typos[TYPOSIZ] = {}; 
 
 /*
  * aim: prepare for using curses.h, to prevent text echoing to screen.
@@ -70,7 +72,6 @@ int print_in_centre(char* text)
 void print_state2 (int lt_count, int wcount, int time, int typos [96])
 {
 	double rate = 0.0;
-	char x = 'a';
 	cout << "Letters typed: " << lt_count << endl;
 	cout << "Words typed: " << wcount << endl;
 	cout << "Time Taken: " << time << " seconds" << endl;
@@ -82,11 +83,11 @@ void print_state2 (int lt_count, int wcount, int time, int typos [96])
 	cout << "Words per minute: " << rate << endl;
 	
 	printw("\nErrors while typing\n");
-	for(int i =0; i < 96; i++)
+	for(int i = 0; i < TYPOSIZ; i++)
 	{
 		if(typos[i] > 0)
 		{
-			x = (char) i + 30;
+			char x = (char) i + 33;
 			cout << x << ": " << typos[i] << endl;
 		}
 	}
@@ -99,7 +100,6 @@ void print_state2 (int lt_count, int wcount, int time, int typos [96])
 void print_state1 (int lt_count, int wcount, int time, int typos [96])
 {
 	double rate = 0.0;
-	char x = 'a';
 	printw("Your Results\n\nLetters typed: %d\n",lt_count);
 	printw("Words typed: %d\n",wcount);
 	printw("Time taken: %d seconds\n", time);
@@ -111,12 +111,12 @@ void print_state1 (int lt_count, int wcount, int time, int typos [96])
 	printw("Words per minute: %f\n", rate);
 	
 	printw("\nErrors while typing\n");
-	for(int i =0; i < 96; i++)
+	for(int i = 0; i < TYPOSIZ; i++)
 	{
 		if(typos[i] > 0)
 		{
-			x = (char) i + 30;
-			printw("%c: %d \n", x,typos[i]);
+			char x = (char) i + 33;
+			printw("%c: %d \n", x, typos[i]);
 		}
 	}
 	wrefresh(stdscr);   
@@ -193,15 +193,12 @@ int main(int argc, char** argv)
 		{
 			wmove(stdscr,2,0 + i);
 			input = tty_getchar();
-			if (line2[i] != input)
+			while(line2[i] != input) 
 			{
-				while(line2[i] != input) 
-				{
-					typos[(int) line2[i] - 30]++;
-					wmove(stdscr,2,0 + i);
-					input = tty_getchar();
-				}
-			} 
+				typos[(int) line2[i] - 33]++;
+				wmove(stdscr,2,0 + i);
+				input = tty_getchar();
+			}
 			//Correct Letter inputted - Replace character using COLOR_PAIR(2) 
 			waddch(stdscr,input);
 			
