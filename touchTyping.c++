@@ -18,7 +18,17 @@ int wcount = 0;
 unsigned lt_count = 0;
 time_t start, finish;
 char input;
-int typos[TYPOSIZ] = {}; 
+int typos[TYPOSIZ] = {};
+
+void usage()
+{
+	cout << "CTTT - Console Touch Typing" << endl;
+	cout << "THIS PROGRAM COMES WITH ABSOLUTELY NO WARRANTY!" <<endl;
+	cout << endl;
+	cout << "usage: CTTT TEXTFILE" << endl;
+	cout << endl;
+	exit(0);
+}
 
 /*
  * aim: prepare for using curses.h, to prevent text echoing to screen.
@@ -50,7 +60,7 @@ int tty_fix()
 }
 
 /*
- * aim: to print a text in the centre of the screen
+ * aim: to print text in the centre of the screen
  * purpose: For title of program
  * */
 int print_in_centre(char* text)
@@ -154,14 +164,22 @@ int main(int argc, char** argv)
 	char name[] = {"CTTT - Console Touch Typing Tutor"}; 
 	string line2 = ""; 
 
-	smpFile.open(argv[1]);
 	
+	/* command line parsing */
 	if(argc < 2) 
 	{
-		printf("A text file argument is required\n");
-		return 1;
+		usage();
+	}
+
+	for (unsigned i = 1; i < argc; ++i) {
+		/* help */
+		if (!strcmp (argv[i], "-h") || !strcmp (argv[i], "-help"))
+		{
+		usage();
+		}
 	}
 	
+	smpFile.open(argv[1]);
 	tty_break();
 	
 	for(int i = 0; i < 100;i++)
@@ -210,7 +228,6 @@ int main(int argc, char** argv)
 		}
 		werase(stdscr); 
 	}		
-
 	end_program();
 	return 0;
 }
