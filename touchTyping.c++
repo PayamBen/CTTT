@@ -180,6 +180,13 @@ int main(int argc, char** argv)
 	}
 	
 	smpFile.open(argv[1]);
+	if (!smpFile.good())
+	{
+		cout << endl;
+		cout << "Error while reading file" << endl;
+		cout << endl;
+		exit(1);
+	}
 	tty_break();
 	
 	for(int i = 0; i < 100;i++)
