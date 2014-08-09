@@ -21,6 +21,7 @@ char input;
 int typos[TYPOSIZ] = {};
 short text_background_color;
 short text_foreground_color;
+short words_per_line = 5;
 
 void usage()
 {
@@ -187,7 +188,6 @@ short fetch_color(char *col_str) {
 int main(int argc, char** argv)
 {
 	char name[] = {"CTTT - Console Touch Typing Tutor"}; 
-	string line2 = ""; 
 
 	
 	/* command line parsing */
@@ -201,6 +201,7 @@ int main(int argc, char** argv)
 
 		const char tcb[] = "--text-background-color=";
 		const char tcf[] = "--text-foreground-color=";
+		const char wpl[] = "--words-per-line=";
 
 		if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0) {
 			// help();
@@ -208,6 +209,8 @@ int main(int argc, char** argv)
 			text_background_color = fetch_color(argv[i] + strlen(tcb));			
 		} else if (strncmp(argv[i], tcf, strlen(tcf)) == 0) {
 			text_foreground_color = fetch_color(argv[i] + strlen(tcf));
+		} else if (strncmp(argv[i], wpl, strlen(wpl)) == 0) {
+			words_per_line = static_cast<short>(atoi(argv[i] + strlen(wpl)));
 		}
 	}
 	
@@ -235,32 +238,46 @@ int main(int argc, char** argv)
 	
 	int readcount = 0;
 	while (smpFile.good())
-	{
-		getline(smpFile,line2);
-		wcount++;
+	{		
+		string wordline;
+		string word;
+
+		// get new words
+		for (int i = 0; i < words_per_line; ++i) {
+
+			if (!smpFile.good()) {
+				words_per_line = i;
+				break;
+			}
+			
+			getline(smpFile, word);	
+			wordline += word + string(" ");	
+		}
+
 		print_in_centre(name);
 		wmove(stdscr,2,0);
 		wattron(stdscr,COLOR_PAIR(1));
-		printw("%s\n",line2.c_str());   
+		printw("%s\n", wordline.c_str());   
 		wrefresh(stdscr);
 		wattron(stdscr,COLOR_PAIR(2));
-		printw("word count %u\n",(unsigned) line2.size());
-		lt_count = (unsigned) line2.size() + lt_count; 
-		for(unsigned i = 0; i < line2.size() ;++i)
+		printw("character count %u\n",(unsigned) wordline.size());
+		for(unsigned i = 0; i < wordline.size(); ++i)
 		{
 			wmove(stdscr,2,0 + i);
 			input = tty_getchar();
-			while(line2[i] != input) 
+			while(wordline[i] != input) 
 			{
-				typos[(int) line2[i] - 33]++;
+				typos[(int)wordline[i] - 33]++;
 				wmove(stdscr,2,0 + i);
 				input = tty_getchar();
 			}
 			//Correct Letter inputted - Replace character using COLOR_PAIR(2) 
 			waddch(stdscr,input);
+
+			++lt_count;
 			
 			//To count the number of words, 
-			if(line2[i] == ' ')
+			if(wordline[i] == ' ')
 			{
 				wcount++;
 			}
