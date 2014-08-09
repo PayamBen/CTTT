@@ -19,6 +19,8 @@ unsigned lt_count = 0;
 time_t start, finish;
 char input;
 int typos[TYPOSIZ] = {};
+short text_background_color;
+short text_foreground_color;
 
 void usage()
 {
@@ -159,6 +161,29 @@ void signal_handler(int signum)
 	end_program();
 }
 
+/*
+ * aim: fetch command line option colors
+ */
+short fetch_color(char *col_str) {
+	if (strcmp(col_str, "black") == 0) {
+		return COLOR_BLACK;
+	} else if (strcmp(col_str, "red") == 0) {
+		return COLOR_RED;
+	} else if (strcmp(col_str, "green") == 0) {
+		return COLOR_GREEN;
+	} else if (strcmp(col_str, "yellow") == 0) {
+		return COLOR_YELLOW;
+	} else if (strcmp(col_str, "blue") == 0) {
+		return COLOR_BLUE;
+	} else if (strcmp(col_str, "magenta") == 0) {
+		return COLOR_MAGENTA;
+	} else if (strcmp(col_str, "cyan") == 0) {
+		return COLOR_CYAN;
+	} else if (strcmp(col_str, "white") == 0) {
+		return COLOR_WHITE;
+	}
+}
+
 int main(int argc, char** argv)
 {
 	char name[] = {"CTTT - Console Touch Typing Tutor"}; 
@@ -171,16 +196,23 @@ int main(int argc, char** argv)
 		usage();
 	}
 
+	/* options */
 	for (unsigned i = 1; i < argc; ++i) {
-		/* help */
-		if (!strcmp (argv[i], "-h") || !strcmp (argv[i], "-help"))
-		{
-		usage();
+
+		const char tcb[] = "--text-background-color=";
+		const char tcf[] = "--text-foreground-color=";
+
+		if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0) {
+			// help();
+		} else if (strncmp(argv[i], tcb, strlen(tcb)) == 0) {
+			text_background_color = fetch_color(argv[i] + strlen(tcb));			
+		} else if (strncmp(argv[i], tcf, strlen(tcf)) == 0) {
+			text_foreground_color = fetch_color(argv[i] + strlen(tcf));
 		}
 	}
 	
 	smpFile.open(argv[1]);
-	if (!smpFile.good())
+	if (!smpFile.is_open())
 	{
 		cout << endl;
 		cout << "Error while reading file" << endl;
@@ -194,8 +226,8 @@ int main(int argc, char** argv)
 		typos[i] = 0;
 	}
 	
-	init_pair(1,COLOR_BLUE,COLOR_RED);
-	init_pair(2,COLOR_WHITE,COLOR_BLACK);
+	init_pair(1, text_foreground_color, text_background_color);
+	init_pair(2, COLOR_WHITE, COLOR_BLACK);
 	
 	time(&start);
 
@@ -238,3 +270,4 @@ int main(int argc, char** argv)
 	end_program();
 	return 0;
 }
+
