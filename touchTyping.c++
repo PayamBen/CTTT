@@ -204,7 +204,7 @@ int main(int argc, char** argv)
 		const char wpl[] = "--words-per-line=";
 
 		if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0) {
-			// help();
+			usage();
 		} else if (strncmp(argv[i], tcb, strlen(tcb)) == 0) {
 			text_background_color = fetch_color(argv[i] + strlen(tcb));			
 		} else if (strncmp(argv[i], tcf, strlen(tcf)) == 0) {
