@@ -19,6 +19,9 @@ unsigned lt_count = 0;
 time_t start, finish;
 char input;
 int typos[TYPOSIZ] = {};
+short text_background_color;
+short text_foreground_color;
+short words_per_line = 5;
 
 void usage()
 {
@@ -159,10 +162,32 @@ void signal_handler(int signum)
 	end_program();
 }
 
+/*
+ * aim: fetch command line option colors
+ */
+short fetch_color(char *col_str) {
+	if (strcmp(col_str, "black") == 0) {
+		return COLOR_BLACK;
+	} else if (strcmp(col_str, "red") == 0) {
+		return COLOR_RED;
+	} else if (strcmp(col_str, "green") == 0) {
+		return COLOR_GREEN;
+	} else if (strcmp(col_str, "yellow") == 0) {
+		return COLOR_YELLOW;
+	} else if (strcmp(col_str, "blue") == 0) {
+		return COLOR_BLUE;
+	} else if (strcmp(col_str, "magenta") == 0) {
+		return COLOR_MAGENTA;
+	} else if (strcmp(col_str, "cyan") == 0) {
+		return COLOR_CYAN;
+	} else if (strcmp(col_str, "white") == 0) {
+		return COLOR_WHITE;
+	}
+}
+
 int main(int argc, char** argv)
 {
 	char name[] = {"CTTT - Console Touch Typing Tutor"}; 
-	string line2 = ""; 
 
 	
 	/* command line parsing */
@@ -171,16 +196,26 @@ int main(int argc, char** argv)
 		usage();
 	}
 
+	/* options */
 	for (unsigned i = 1; i < argc; ++i) {
-		/* help */
-		if (!strcmp (argv[i], "-h") || !strcmp (argv[i], "-help"))
-		{
-		usage();
+
+		const char tcb[] = "--text-background-color=";
+		const char tcf[] = "--text-foreground-color=";
+		const char wpl[] = "--words-per-line=";
+
+		if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0) {
+			// help();
+		} else if (strncmp(argv[i], tcb, strlen(tcb)) == 0) {
+			text_background_color = fetch_color(argv[i] + strlen(tcb));			
+		} else if (strncmp(argv[i], tcf, strlen(tcf)) == 0) {
+			text_foreground_color = fetch_color(argv[i] + strlen(tcf));
+		} else if (strncmp(argv[i], wpl, strlen(wpl)) == 0) {
+			words_per_line = static_cast<short>(atoi(argv[i] + strlen(wpl)));
 		}
 	}
 	
 	smpFile.open(argv[1]);
-	if (!smpFile.good())
+	if (!smpFile.is_open())
 	{
 		cout << endl;
 		cout << "Error while reading file" << endl;
@@ -194,8 +229,8 @@ int main(int argc, char** argv)
 		typos[i] = 0;
 	}
 	
-	init_pair(1,COLOR_BLUE,COLOR_RED);
-	init_pair(2,COLOR_WHITE,COLOR_BLACK);
+	init_pair(1, text_foreground_color, text_background_color);
+	init_pair(2, COLOR_WHITE, COLOR_BLACK);
 	
 	time(&start);
 
@@ -203,32 +238,46 @@ int main(int argc, char** argv)
 	
 	int readcount = 0;
 	while (smpFile.good())
-	{
-		getline(smpFile,line2);
-		wcount++;
+	{		
+		string wordline;
+		string word;
+
+		// get new words
+		for (int i = 0; i < words_per_line; ++i) {
+
+			if (!smpFile.good()) {
+				words_per_line = i;
+				break;
+			}
+			
+			getline(smpFile, word);	
+			wordline += word + string(" ");	
+		}
+
 		print_in_centre(name);
 		wmove(stdscr,2,0);
 		wattron(stdscr,COLOR_PAIR(1));
-		printw("%s\n",line2.c_str());   
+		printw("%s\n", wordline.c_str());   
 		wrefresh(stdscr);
 		wattron(stdscr,COLOR_PAIR(2));
-		printw("word count %u\n",(unsigned) line2.size());
-		lt_count = (unsigned) line2.size() + lt_count; 
-		for(unsigned i = 0; i < line2.size() ;++i)
+		printw("character count %u\n",(unsigned) wordline.size());
+		for(unsigned i = 0; i < wordline.size(); ++i)
 		{
 			wmove(stdscr,2,0 + i);
 			input = tty_getchar();
-			while(line2[i] != input) 
+			while(wordline[i] != input) 
 			{
-				typos[(int) line2[i] - 33]++;
+				typos[(int)wordline[i] - 33]++;
 				wmove(stdscr,2,0 + i);
 				input = tty_getchar();
 			}
 			//Correct Letter inputted - Replace character using COLOR_PAIR(2) 
 			waddch(stdscr,input);
+
+			++lt_count;
 			
 			//To count the number of words, 
-			if(line2[i] == ' ')
+			if(wordline[i] == ' ')
 			{
 				wcount++;
 			}
@@ -238,3 +287,4 @@ int main(int argc, char** argv)
 	end_program();
 	return 0;
 }
+
