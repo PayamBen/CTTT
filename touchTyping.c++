@@ -19,8 +19,8 @@ unsigned lt_count = 0;
 time_t start, finish;
 char input;
 int typos[TYPOSIZ] = {};
-short text_background_color;
-short text_foreground_color;
+short text_background_color = COLOR_BLACK;
+short text_foreground_color = COLOR_BLUE;
 short words_per_line = 5;
 
 void usage()
@@ -172,21 +172,21 @@ void signal_handler(int signum)
  * aim: fetch command line option colors
  */
 short fetch_color(char *col_str) {
-	if (strcmp(col_str, "black") == 0) {
+	if (strcasecmp(col_str, "black") == 0) {
 		return COLOR_BLACK;
-	} else if (strcmp(col_str, "red") == 0) {
+	} else if (strcasecmp(col_str, "red") == 0) {
 		return COLOR_RED;
-	} else if (strcmp(col_str, "green") == 0) {
+	} else if (strcasecmp(col_str, "green") == 0) {
 		return COLOR_GREEN;
-	} else if (strcmp(col_str, "yellow") == 0) {
+	} else if (strcasecmp(col_str, "yellow") == 0) {
 		return COLOR_YELLOW;
-	} else if (strcmp(col_str, "blue") == 0) {
+	} else if (strcasecmp(col_str, "blue") == 0) {
 		return COLOR_BLUE;
-	} else if (strcmp(col_str, "magenta") == 0) {
+	} else if (strcasecmp(col_str, "magenta") == 0) {
 		return COLOR_MAGENTA;
-	} else if (strcmp(col_str, "cyan") == 0) {
+	} else if (strcasecmp(col_str, "cyan") == 0) {
 		return COLOR_CYAN;
-	} else if (strcmp(col_str, "white") == 0) {
+	} else if (strcasecmp(col_str, "white") == 0) {
 		return COLOR_WHITE;
 	}
 }
