@@ -28,7 +28,13 @@ void usage()
 	cout << "CTTT - Console Touch Typing" << endl;
 	cout << "THIS PROGRAM COMES WITH ABSOLUTELY NO WARRANTY!" <<endl;
 	cout << endl;
-	cout << "usage: CTTT TEXTFILE" << endl;
+	cout << "usage: CTTT TEXTFILE OPTIONS" << endl;
+	cout << "OPTIONS:" << endl;
+	cout << "	--text-background-color=" << endl;
+	cout << "	--text-foreground-color=" << endl;
+	cout << "	--words-per-line=" << endl;
+	cout << endl;
+	cout << "Colors Include: red, green, yellow, blue, magenta, cyan, white" << endl;
 	cout << endl;
 	exit(0);
 }
