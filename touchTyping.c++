@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <signal.h>
+#include <vector>
 
 #define TYPOSIZ 144 // 144 is from 33 (!) to 176 (~)
 
@@ -22,6 +23,8 @@ int typos[TYPOSIZ] = {};
 short text_background_color = COLOR_BLACK;
 short text_foreground_color = COLOR_BLUE;
 short words_per_line = 5;
+bool isRandom = false;
+vector<string> wordlib;
 
 void usage()
 {
@@ -208,6 +211,7 @@ int main(int argc, char** argv)
 		const char tcb[] = "--text-background-color=";
 		const char tcf[] = "--text-foreground-color=";
 		const char wpl[] = "--words-per-line=";
+		const char rnd[] = "--randomize";
 
 		if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0) {
 			usage();
@@ -217,6 +221,9 @@ int main(int argc, char** argv)
 			text_foreground_color = fetch_color(argv[i] + strlen(tcf));
 		} else if (strncmp(argv[i], wpl, strlen(wpl)) == 0) {
 			words_per_line = static_cast<short>(atoi(argv[i] + strlen(wpl)));
+		} else if (strncmp(argv[i], rnd, strlen(rnd)) == 0) {
+			isRandom = true;
+			srand(time(0));
 		}
 	}
 	
@@ -241,9 +248,18 @@ int main(int argc, char** argv)
 	time(&start);
 
 	signal(SIGINT, signal_handler);
+
+	// get words for random
+	if (isRandom) {
+		while (smpFile) {
+			string buffer;
+			getline(smpFile, buffer);
+			wordlib.push_back(buffer);
+		}
+	}
 	
 	int readcount = 0;
-	while (smpFile.good())
+	while (smpFile.good() || isRandom)
 	{		
 		string wordline;
 		string word;
@@ -251,12 +267,17 @@ int main(int argc, char** argv)
 		// get new words
 		for (int i = 0; i < words_per_line; ++i) {
 
-			if (!smpFile.good()) {
+			if (!smpFile.good() && !isRandom) {
 				words_per_line = i;
 				break;
 			}
 			
-			getline(smpFile, word);	
+			if (!isRandom) {
+				getline(smpFile, word);	
+			} else {
+				word = wordlib[rand() % wordlib.size()];
+			}
+
 			wordline += word + string(" ");	
 		}
 
