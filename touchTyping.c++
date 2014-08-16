@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <signal.h>
 #include <vector>
+#include <sstream>
 
 #define TYPOSIZ 144 // 144 is from 33 (!) to 176 (~)
 
@@ -87,60 +88,48 @@ int print_in_centre(char* text)
 	printw("%s",text);
 }
 
+// generates stats report
+string generate_report(int lt_count, int wcount, int time, int typos[TYPOSIZ]) {
+	stringstream report;
+
+	double rate = 0.0;
+	report << "Letters typed: " << lt_count << endl;
+	report << "Words typed: " << wcount << endl;
+	report << "Time taken: " << time << " seconds" << endl;
+	
+	rate = (double)lt_count * 60 / time;
+	report << "Letters per minute: " << rate << endl;
+
+	rate /= 5.0;
+	report << "Words per minute: " << rate << endl;
+
+	report << endl << "Errors while typing" << endl;
+	for (int i = 0; i < TYPOSIZ; ++i) {
+		if (typos[i] > 0) {
+			char x = (char)i + 33;
+			report << x << ": " << typos[i] << endl;
+		}
+	}
+
+	return report.str();
+}
+
  /* 
   * aim: to print performance statistics 
   * purpose: To be displayed after the program has exit.  
   * */
-void print_state2 (int lt_count, int wcount, int time, int typos [96])
+void print_state2 (int lt_count, int wcount, int time, int typos [TYPOSIZ])
 {
-	double rate = 0.0;
-	cout << "Letters typed: " << lt_count << endl;
-	cout << "Words typed: " << wcount << endl;
-	cout << "Time Taken: " << time << " seconds" << endl;
-	
-	rate = (double) lt_count * 60 / time;
-	cout << "Letters per minute: " << rate << endl;
-	
-	rate /= 5.0;
-	cout << "Words per minute: " << rate << endl;
-	
-	printw("\nErrors while typing\n");
-	for(int i = 0; i < TYPOSIZ; i++)
-	{
-		if(typos[i] > 0)
-		{
-			char x = (char) i + 33;
-			cout << x << ": " << typos[i] << endl;
-		}
-	}
+	cout << generate_report(lt_count, wcount, time, typos);
 }
 
  /* 
   * aim: to print out performance statistics 
  * purpose:  Correct output when curses lib init 
  * */
-void print_state1 (int lt_count, int wcount, int time, int typos [96])
+void print_state1 (int lt_count, int wcount, int time, int typos [TYPOSIZ])
 {
-	double rate = 0.0;
-	printw("Your Results\n\nLetters typed: %d\n",lt_count);
-	printw("Words typed: %d\n",wcount);
-	printw("Time taken: %d seconds\n", time);
-	
-	rate = (double) lt_count * 60 / time;
-	printw("Letters per minute: %f\n", rate);
-	
-	rate /= 5.0;
-	printw("Words per minute: %f\n", rate);
-	
-	printw("\nErrors while typing\n");
-	for(int i = 0; i < TYPOSIZ; i++)
-	{
-		if(typos[i] > 0)
-		{
-			char x = (char) i + 33;
-			printw("%c: %d \n", x, typos[i]);
-		}
-	}
+	printw("%s", generate_report(lt_count, wcount, time, typos).c_str());
 	wrefresh(stdscr);   
 }
 
