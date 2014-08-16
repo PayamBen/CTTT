@@ -101,7 +101,7 @@ void print_state2 (int lt_count, int wcount, int time, int typos [96])
 	rate = (double) lt_count * 60 / time;
 	cout << "Letters per minute: " << rate << endl;
 	
-	rate = (double) wcount * 60 / time;
+	rate /= 5.0;
 	cout << "Words per minute: " << rate << endl;
 	
 	printw("\nErrors while typing\n");
@@ -129,7 +129,7 @@ void print_state1 (int lt_count, int wcount, int time, int typos [96])
 	rate = (double) lt_count * 60 / time;
 	printw("Letters per minute: %f\n", rate);
 	
-	rate = (double) wcount * 60 / time;
+	rate /= 5.0;
 	printw("Words per minute: %f\n", rate);
 	
 	printw("\nErrors while typing\n");
