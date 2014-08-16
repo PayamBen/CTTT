@@ -26,6 +26,7 @@ short text_foreground_color = COLOR_BLUE;
 short words_per_line = 5;
 bool isRandom = false;
 vector<string> wordlib;
+int total_typos = 0;
 
 void usage()
 {
@@ -37,6 +38,7 @@ void usage()
 	cout << "	--text-background-color=" << endl;
 	cout << "	--text-foreground-color=" << endl;
 	cout << "	--words-per-line=" << endl;
+	cout << "	--randomize" << endl;
 	cout << endl;
 	cout << "Colors Include: red, green, yellow, blue, magenta, cyan, white" << endl;
 	cout << endl;
@@ -103,12 +105,17 @@ string generate_report(int lt_count, int wcount, int time, int typos[TYPOSIZ]) {
 	rate /= 5.0;
 	report << "Words per minute: " << rate << endl;
 
-	report << endl << "Errors while typing" << endl;
-	for (int i = 0; i < TYPOSIZ; ++i) {
-		if (typos[i] > 0) {
-			char x = (char)i + 33;
-			report << x << ": " << typos[i] << endl;
+	if (total_typos > 0) {
+		report << endl << "Errors while typing" << endl;
+
+		for (int i = 0; i < TYPOSIZ; ++i) {
+			if (typos[i] > 0) {
+				char x = (char)i + 33;
+				report << x << ": " << typos[i] << endl;
+			}
 		}
+		
+		report << "Total typos: " << total_typos << endl;
 	}
 
 	return report.str();
@@ -286,6 +293,7 @@ int main(int argc, char** argv)
 				typos[(int)wordline[i] - 33]++;
 				wmove(stdscr,2,0 + i);
 				input = tty_getchar();
+				++total_typos;
 			}
 			//Correct Letter inputted - Replace character using COLOR_PAIR(2) 
 			waddch(stdscr,input);
