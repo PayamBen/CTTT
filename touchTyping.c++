@@ -26,7 +26,7 @@ short text_foreground_color = COLOR_BLUE;
 short words_per_line = 5;
 bool isRandom = false;
 vector<string> wordlib;
-int total_typos = 0;
+const int minLetterType = 10;
 
 void usage()
 {
@@ -95,6 +95,9 @@ string generate_report(int lt_count, int wcount, int time, int typos[TYPOSIZ]) {
 	stringstream report;
 
 	double rate = 0.0;
+	bool anyMistakes = false;
+	int total_typos = 0;
+	
 	report << "Letters typed: " << lt_count << endl;
 	report << "Words typed: " << wcount << endl;
 	report << "Time taken: " << time << " seconds" << endl;
@@ -105,17 +108,27 @@ string generate_report(int lt_count, int wcount, int time, int typos[TYPOSIZ]) {
 	rate /= 5.0;
 	report << "Words per minute: " << rate << endl;
 
-	if (total_typos > 0) {
+	//check for any errors
+	for (int i = 0; i < TYPOSIZ && !anyMistakes; ++i) {
+		if (typos[i] > 0) {
+			anyMistakes = true;
+		}
+	}
+	
+	
+	if (anyMistakes) {
 		report << endl << "Errors while typing" << endl;
-
 		for (int i = 0; i < TYPOSIZ; ++i) {
 			if (typos[i] > 0) {
 				char x = (char)i + 33;
 				report << x << ": " << typos[i] << endl;
 			}
+			total_typos += typos[i];
 		}
 		
 		report << "Total typos: " << total_typos << endl;
+	}else if(lt_count > minLetterType){
+		report << "No Mistakes: Great Work!\n";
 	}
 
 	return report.str();
@@ -293,7 +306,6 @@ int main(int argc, char** argv)
 				typos[(int)wordline[i] - 33]++;
 				wmove(stdscr,2,0 + i);
 				input = tty_getchar();
-				++total_typos;
 			}
 			//Correct Letter inputted - Replace character using COLOR_PAIR(2) 
 			waddch(stdscr,input);
